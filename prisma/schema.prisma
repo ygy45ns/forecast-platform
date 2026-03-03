@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id
+  username  String
+  balance   Int
+  createdAt DateTime @default(now())
+
+  bets      Bet[]
+  ledgers   Ledger[]
+}
+
+model Bet {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  gameId    String
+  amount    Int
+  status    BetStatus
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Ledger {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      LedgerType
+  amount    Int
+  refId     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Idempotency {
+  key       String   @id
+  request   String
+  createdAt DateTime @default(now())
+}
+
+enum BetStatus {
+  PLACED
+  SETTLED
+  CANCELLED
+}
+
+enum LedgerType {
+  DEPOSIT
+  BET_DEBIT
+  BET_CREDIT
+  BET_REFUND
+}
